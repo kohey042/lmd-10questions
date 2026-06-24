@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>HOME PARTY! 10QUESTIONS SLOT</title>
+<title>HOME PARTY 10QUESTIONS SLOT - STABLE</title>
 <style>
 :root{
   --bg:#070814;
@@ -389,6 +389,7 @@ textarea{
 
 
 <script>
+// STABLE_RESET_VERSION_V26_NO_PWA
 const colors=["#ff4f83","#ff914d","#ffe45c","#7bed9f","#45d4ff","#9b7bff","#ff65d8","#54e0c7","#ffd166","#6ecbff","#c7f464","#ff6b6b","#4ecdc4","#b388ff","#f7b267"];
 const defaultQuestions=[
 "今日の自分のテンションを一言でいうと？",
@@ -409,8 +410,8 @@ const defaultQuestions=[
 ];
 
 let questions=loadQuestions();
-let doneIds=new Set(JSON.parse(localStorage.getItem("hp10q_slot_v9_done")||"[]"));
-let drawCount=Number(localStorage.getItem("hp10q_slot_v9_drawCount")||"0");
+let doneIds=new Set(JSON.parse(localStorage.getItem("hp10q_slot_v26_done")||"[]"));
+let drawCount=Number(localStorage.getItem("hp10q_slot_v26_drawCount")||"0");
 let maxDraws=10;
 let currentIndex=0;
 let offset=0;
@@ -422,7 +423,7 @@ let rafId=null;
 let renderedItems=[];
 let currentStopTarget=null;
 let currentStopAbsIndex=null;
-let soundEnabled=JSON.parse(localStorage.getItem("hp10q_slot_v9_sound")||"true");
+let soundEnabled=JSON.parse(localStorage.getItem("hp10q_slot_v26_sound")||"true");
 
 const slotTrack=document.getElementById("slotTrack");
 const slotWindow=document.getElementById("slotWindow");
@@ -458,14 +459,14 @@ let audioPreparing=false;
 
 function loadQuestions(){
   try{
-    const saved=JSON.parse(localStorage.getItem("hp10q_slot_v9_questions")||"[]");
+    const saved=JSON.parse(localStorage.getItem("hp10q_slot_v26_questions")||"[]");
     return Array.isArray(saved)&&saved.length?saved:defaultQuestions.slice();
   }catch(e){return defaultQuestions.slice()}
 }
 function saveQuestionList(){
   const lines=questionList.value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
   questions=lines.length?lines:defaultQuestions.slice();
-  localStorage.setItem("hp10q_slot_v9_questions",JSON.stringify(questions));
+  localStorage.setItem("hp10q_slot_v26_questions",JSON.stringify(questions));
   resetAll("質問を保存しました。STARTを押して回してください。",false);
   modal.classList.remove("show");
 }
@@ -544,31 +545,36 @@ async function prepareAudio(){
   if(!soundEnabled)return false;
   if(audioReady)return true;
   if(audioPreparing){
-    while(audioPreparing && !audioReady){
+    const started=performance.now();
+    while(audioPreparing && !audioReady && performance.now()-started<1600){
       await new Promise(r=>setTimeout(r,30));
     }
     return audioReady;
   }
   audioPreparing=true;
-  try{
-    const ctx=getOrCreateAudioCtx();
-    if(!ctx)return false;
-    await ctx.resume();
-    const entries=Object.entries(AUDIO_DATA);
-    for(const [key,val] of entries){
-      if(!audioBuffers[key]){
-        const arrayBuffer=b64ToArrayBuffer(val);
-        audioBuffers[key]=await ctx.decodeAudioData(arrayBuffer);
+  const timeout=new Promise(resolve=>setTimeout(()=>resolve(false),1800));
+  const task=(async()=>{
+    try{
+      const ctx=getOrCreateAudioCtx();
+      if(!ctx)return false;
+      await ctx.resume();
+      const entries=Object.entries(AUDIO_DATA);
+      for(const [key,val] of entries){
+        if(!audioBuffers[key]){
+          const arrayBuffer=b64ToArrayBuffer(val);
+          audioBuffers[key]=await ctx.decodeAudioData(arrayBuffer);
+        }
       }
+      audioReady=true;
+      return true;
+    }catch(e){
+      console.warn("Audio prepare failed:",e);
+      return false;
     }
-    audioReady=true;
-    return true;
-  }catch(e){
-    console.warn("Audio prepare failed:",e);
-    return false;
-  }finally{
-    audioPreparing=false;
-  }
+  })();
+  const ok=await Promise.race([task,timeout]);
+  audioPreparing=false;
+  return ok;
 }
 function getAudioMsByKey(key,fallback){
   const buffer=audioBuffers[key];
@@ -613,7 +619,8 @@ async function startRolling(){
   }
   spinBtn.disabled=true;
   spinBtn.textContent="LOADING...";
-  await prepareAudio();
+  const ok=await prepareAudio();
+
   rolling=true;
   stopping=false;
   mainPanel.classList.add("rolling");
@@ -624,7 +631,7 @@ async function startRolling(){
   spinBtn.textContent="ROLLING...";
   resultText.textContent="STOPを押すと質問が確定します。";
   stopSpinSound();
-  spinSource=playBuffer("spin",{loop:true});
+  if(ok)spinSource=playBuffer("spin",{loop:true});
   lastTime=performance.now();
   rafId=requestAnimationFrame(rollLoop);
 }
@@ -724,8 +731,8 @@ function confirmPick(item,absIndex){
 
   drawCount=Math.min(maxDraws,drawCount+1);
   if(noRepeat.checked)doneIds.add(item.id);
-  localStorage.setItem("hp10q_slot_v9_done",JSON.stringify([...doneIds]));
-  localStorage.setItem("hp10q_slot_v9_drawCount",String(drawCount));
+  localStorage.setItem("hp10q_slot_v26_done",JSON.stringify([...doneIds]));
+  localStorage.setItem("hp10q_slot_v26_drawCount",String(drawCount));
 
   bigNumber.textContent=String(drawCount);
   bigNumber.style.background=item.color;
@@ -773,8 +780,8 @@ function resetAll(message="リセットしました。STARTを押すと、質問
   mainPanel.classList.remove("rolling","stopping");
   doneIds=new Set();
   drawCount=0;
-  localStorage.setItem("hp10q_slot_v9_done","[]");
-  localStorage.setItem("hp10q_slot_v9_drawCount","0");
+  localStorage.setItem("hp10q_slot_v26_done","[]");
+  localStorage.setItem("hp10q_slot_v26_drawCount","0");
   if(!keepResult){
     resultText.textContent=message;
     bigNumber.textContent="?";
@@ -790,7 +797,7 @@ function resetAll(message="リセットしました。STARTを押すと、質問
 }
 function restoreDefaults(){
   questions=defaultQuestions.slice();
-  localStorage.setItem("hp10q_slot_v9_questions",JSON.stringify(questions));
+  localStorage.setItem("hp10q_slot_v26_questions",JSON.stringify(questions));
   questionList.value=questions.join("\n");
   resetAll("初期質問に戻しました。",false);
 }
@@ -820,7 +827,7 @@ resetBtn.addEventListener("click",()=>resetAll());
 noRepeat.addEventListener("change",()=>resetAll("設定を変更しました。STARTを押して回してください。",false));
 soundBtn.addEventListener("click",()=>{
   soundEnabled=!soundEnabled;
-  localStorage.setItem("hp10q_slot_v9_sound",JSON.stringify(soundEnabled));
+  localStorage.setItem("hp10q_slot_v26_sound",JSON.stringify(soundEnabled));
   updateSoundButton();
   if(soundEnabled){
     prepareAudio().then(()=>playBuffer("stop"));
