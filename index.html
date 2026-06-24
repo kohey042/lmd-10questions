@@ -3,7 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>HOME PARTY! 10QUESTIONS SLOT</title>
+<title>HOME PARTY 10QUESTIONS SLOT</title>
+<meta name="theme-color" content="#070814" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="10QUESTIONS" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <style>
 :root{
   --bg:#070814;
@@ -260,6 +268,15 @@ textarea{
 .piece{position:absolute;width:10px;height:16px;opacity:0;animation:fall 1.7s ease-out forwards}
 @keyframes fall{0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(720px) rotate(520deg);opacity:0}}
 
+
+
+/* PWA mode: app-like home screen launch */
+body.pwa-mode .utilityControls #fsBtn{
+  display:none;
+}
+body.pwa-mode{
+  overscroll-behavior:none;
+}
 
 /* v20: iPad fullscreen top clipping fix */
 @media (orientation: landscape){
@@ -836,6 +853,11 @@ window.addEventListener("resize",()=>buildTrack(currentIndex));
 ["pointerdown","touchstart","click"].forEach(ev=>{
   window.addEventListener(ev,()=>{ if(soundEnabled)prepareAudio(); },{once:true,passive:true});
 });
+
+
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.body.classList.add('pwa-mode');
+}
 
 updateSoundButton();
 buildStatus();
