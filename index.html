@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>HOME PARTY! 10QUESTIONS Slot</title>
+<style>
+  :root{
+    --bg:#070814; --panel:#111329; --ink:#fff; --muted:#aeb2d8;
+    --accent:#ff4fa3; --accent2:#39d5ff; --yellow:#ffe45c; --green:#70f0b4; --red:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);
+    background:radial-gradient(circle at 12% 10%,rgba(255,79,163,.18),transparent 30%),
+      radial-gradient(circle at 88% 16%,rgba(57,213,255,.18),transparent 30%),
+      radial-gradient(circle at 50% 105%,rgba(255,228,92,.12),transparent 38%),var(--bg);
+    overflow-x:hidden;
+  }
+  .app{width:min(1180px,100%);margin:0 auto;padding:22px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
+  .brand small{display:block;color:var(--muted);letter-spacing:.18em;font-weight:900;margin-bottom:5px}
+  h1{margin:0;font-size:clamp(28px,5.4vw,64px);letter-spacing:.02em;line-height:.9}
+  h1 span{color:var(--accent)}
+  .pill{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:var(--muted);border-radius:999px;padding:9px 13px;font-weight:800;white-space:nowrap}
+  .stage{display:grid;grid-template-columns:1fr 350px;gap:18px;align-items:stretch}
+  .mainPanel,.sidePanel{border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border-radius:30px;box-shadow:0 24px 70px rgba(0,0,0,.42)}
+  .mainPanel{padding:24px;min-height:650px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+  .screenLabel{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .screenLabel b{color:#fff;letter-spacing:.12em;font-size:14px}
+  .lampRow{display:flex;gap:7px}.lamp{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.18)}
+  .spinning .lamp:nth-child(1){background:var(--accent);box-shadow:0 0 18px var(--accent)}
+  .spinning .lamp:nth-child(2){background:var(--yellow);box-shadow:0 0 18px var(--yellow)}
+  .spinning .lamp:nth-child(3){background:var(--accent2);box-shadow:0 0 18px var(--accent2)}
+  .slotFrame{position:relative;border-radius:32px;background:linear-gradient(135deg,rgba(255,79,163,.95),rgba(57,213,255,.95));padding:7px;box-shadow:0 26px 70px rgba(0,0,0,.45)}
+  .slotWindow{height:370px;border-radius:26px;background:#f8f8ff;color:#101225;overflow:hidden;position:relative;border:6px solid rgba(255,255,255,.75)}
+  .slotWindow:before,.slotWindow:after{content:"";position:absolute;left:0;right:0;height:108px;z-index:4;pointer-events:none}
+  .slotWindow:before{top:0;background:linear-gradient(180deg,rgba(248,248,255,1),rgba(248,248,255,.72),transparent)}
+  .slotWindow:after{bottom:0;background:linear-gradient(0deg,rgba(248,248,255,1),rgba(248,248,255,.72),transparent)}
+  .targetLine{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);height:132px;border:5px solid rgba(255,79,163,.72);border-radius:22px;z-index:3;pointer-events:none;box-shadow:0 0 0 999px rgba(255,255,255,.04),0 0 30px rgba(255,79,163,.22)}
+  .slotTrack{position:absolute;left:0;right:0;top:0;will-change:transform}
+  .qItem{height:132px;padding:16px 24px;display:grid;grid-template-columns:78px 1fr;align-items:center;gap:18px;border-bottom:1px solid rgba(20,22,40,.10)}
+  .qItem .letter{width:70px;height:70px;border-radius:18px;display:grid;place-items:center;color:#101225;font-size:38px;font-weight:1000;box-shadow:0 10px 20px rgba(0,0,0,.18)}
+  .qItem .text{font-size:clamp(22px,3.2vw,35px);line-height:1.18;font-weight:1000;letter-spacing:.01em}
+  .qItem .num{display:block;font-size:13px;color:#6d708f;letter-spacing:.16em;font-weight:900;margin-bottom:4px}
+  .flash{position:absolute;inset:0;background:rgba(255,255,255,.75);opacity:0;pointer-events:none;z-index:8}
+  .flash.on{animation:flash .45s ease-out}@keyframes flash{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}
+  .decision{margin-top:18px;display:flex;flex-wrap:wrap;justify-content:center;gap:11px}
+  button{appearance:none;border:0;border-radius:999px;padding:14px 20px;font-weight:1000;letter-spacing:.04em;cursor:pointer;transition:.15s transform,.15s opacity;font-size:15px;box-shadow:0 10px 22px rgba(0,0,0,.25)}
+  button:hover{transform:translateY(-1px)}button:disabled{opacity:.45;cursor:not-allowed}
+  .primary{background:linear-gradient(135deg,var(--accent),#ff924d);color:#fff;font-size:20px;padding:16px 34px}
+  .secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.16)}
+  .danger{background:rgba(255,107,107,.14);color:#fff;border:1px solid rgba(255,107,107,.35)}
+  .sidePanel{padding:18px;min-height:650px;display:flex;flex-direction:column}
+  .resultCard{background:rgba(255,255,255,.94);color:#101225;border-radius:26px;padding:18px;min-height:210px;box-shadow:inset 0 -8px 0 rgba(0,0,0,.08);margin-bottom:16px}
+  .resultHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+  .bigLetter{width:74px;height:74px;border-radius:18px;display:grid;place-items:center;font-size:42px;font-weight:1000;color:#101225;background:var(--yellow)}
+  .resultHead small{color:#70738e;font-weight:900;letter-spacing:.14em}.resultText{font-size:clamp(22px,2.5vw,32px);line-height:1.22;font-weight:1000}
+  .status{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .mini{aspect-ratio:1/1;border-radius:14px;display:grid;place-items:center;font-size:22px;font-weight:1000;color:#fff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);position:relative}
+  .mini.done{background:rgba(112,240,180,.18);border-color:rgba(112,240,180,.55)}.mini.done:after{content:"★";position:absolute;right:3px;top:-6px;color:var(--yellow);font-size:18px}
+  .note{color:var(--muted);line-height:1.65;font-size:14px;margin:0 0 16px}.sideActions{display:grid;gap:9px;margin-top:auto}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}
+  .modalBox{width:min(940px,100%);max-height:min(92vh,860px);overflow:auto;background:#12142a;border:1px solid rgba(255,255,255,.16);border-radius:28px;box-shadow:0 25px 90px rgba(0,0,0,.55);padding:20px}
+  .modalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.modalHead h2{margin:0;font-size:24px}
+  .editGrid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:12px}
+  label{display:block;color:var(--muted);font-weight:900;letter-spacing:.08em;font-size:13px}
+  textarea{width:100%;min-height:86px;resize:vertical;margin-top:6px;border-radius:16px;padding:12px;color:#fff;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.16);font:inherit;line-height:1.45}
+  .check{display:flex;align-items:center;gap:9px;color:var(--muted);margin:14px 0 2px;font-weight:800}input[type=checkbox]{width:19px;height:19px}
+  .modalActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;justify-content:flex-end}
+  .confetti{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:70}.piece{position:absolute;width:10px;height:16px;opacity:0;animation:fall 1.7s ease-out forwards}
+  @keyframes fall{0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(720px) rotate(520deg);opacity:0}}
+  @media(max-width:900px){.stage{grid-template-columns:1fr}.mainPanel,.sidePanel{min-height:auto}.slotWindow{height:320px}.qItem{height:120px;grid-template-columns:62px 1fr;padding:12px 16px}.qItem .letter{width:58px;height:58px;font-size:31px;border-radius:14px}.targetLine{height:120px}header{flex-direction:column;align-items:flex-start}.editGrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><div class="brand"><small>LMD JOURNAL / HOME PARTY!</small><h1><span>10QUESTIONS</span> SLOT</h1></div><div class="pill">質問が回って、ゆっくり止まる版</div></header>
+  <main class="stage">
+    <section class="mainPanel" id="mainPanel">
+      <div class="screenLabel"><b>QUESTION ROULETTE</b><div class="lampRow"><i class="lamp"></i><i class="lamp"></i><i class="lamp"></i></div></div>
+      <div class="slotFrame"><div class="slotWindow" id="slotWindow"><div class="targetLine"></div><div class="slotTrack" id="slotTrack"></div><div class="flash" id="flash"></div></div></div>
+      <div class="decision"><button class="primary" id="spinBtn">START</button><button class="secondary" id="editBtn">質問編集</button><button class="secondary" id="fsBtn">全画面</button><button class="danger" id="resetBtn">リセット</button></div>
+    </section>
+    <aside class="sidePanel">
+      <div class="resultCard"><div class="resultHead"><div><small>SELECTED</small><div style="font-weight:1000;font-size:18px;">確定した質問</div></div><div class="bigLetter" id="bigLetter">?</div></div><div class="resultText" id="resultText">STARTを押すと、質問が回り始めます。</div></div>
+      <div class="status" id="status"></div>
+      <p class="note">IPPONグランプリの「写真でひとこと」みたいに、質問文が高速で切り替わり、だんだん遅くなって止まる演出です。収録では全画面にして、止まった質問をそのまま読ませる想定です。</p>
+      <div class="sideActions"><label class="check"><input type="checkbox" id="noRepeat" checked>一度出た質問は次から除外</label></div>
+    </aside>
+  </main>
+</div>
+<div class="modal" id="modal"><div class="modalBox"><div class="modalHead"><h2>質問を編集</h2><button class="secondary" id="closeBtn">閉じる</button></div><div class="editGrid" id="editGrid"></div><div class="modalActions"><button class="danger" id="defaultBtn">初期質問に戻す</button><button class="primary" id="saveBtn">保存して閉じる</button></div></div></div>
+<div class="confetti" id="confetti"></div>
+<script>
+const letters=["H","O","M","E","P","A","R","T","Y","!"];
+const colors=["#ff4f83","#ff914d","#ffe45c","#7bed9f","#45d4ff","#9b7bff","#ff65d8","#54e0c7","#ffd166","#6ecbff"];
+const defaultQuestions={"H":"今日の自分のテンションを一言でいうと？","O":"最近ハマっていることは？","M":"ダンスを始めたきっかけは？","E":"レッスン中の自分はどんなタイプ？","P":"HOME PARTY!で見てほしいところは？","A":"仲間の好きなところは？","R":"先生を一言でいうと？","T":"本番前にいつも考えることは？","Y":"自分らしさが出る瞬間は？","!":"見に来てくれる人へ一言！"};
+let questions=loadQuestions();let done=new Set(JSON.parse(localStorage.getItem("hp10q_slot_done")||"[]"));let spinning=false;let currentIndex=0;
+const slotTrack=document.getElementById("slotTrack"),mainPanel=document.getElementById("mainPanel"),spinBtn=document.getElementById("spinBtn"),editBtn=document.getElementById("editBtn"),fsBtn=document.getElementById("fsBtn"),resetBtn=document.getElementById("resetBtn"),noRepeat=document.getElementById("noRepeat"),resultText=document.getElementById("resultText"),bigLetter=document.getElementById("bigLetter"),statusEl=document.getElementById("status"),modal=document.getElementById("modal"),closeBtn=document.getElementById("closeBtn"),saveBtn=document.getElementById("saveBtn"),defaultBtn=document.getElementById("defaultBtn"),editGrid=document.getElementById("editGrid"),flash=document.getElementById("flash");
+function safeId(l){return l==="!"?"bang":l}function loadQuestions(){try{return {...defaultQuestions,...JSON.parse(localStorage.getItem("hp10q_slot_questions")||"{}")}}catch(e){return {...defaultQuestions}}}
+function getItems(){return letters.map((letter,i)=>({letter,index:i,color:colors[i],question:questions[letter]||defaultQuestions[letter]}))}function getActiveItems(){const items=getItems();return noRepeat.checked?items.filter(item=>!done.has(item.letter)):items}
+function getItemH(){const first=document.querySelector(".qItem");return first?first.getBoundingClientRect().height:132}function getCenterOffset(){const win=document.getElementById("slotWindow");return win.getBoundingClientRect().height/2-getItemH()/2}function setTrackY(y){slotTrack.style.transform=`translateY(${y}px)`}
+function buildTrack(centerIndex=0){const items=getItems();slotTrack.innerHTML="";const sequence=[];for(let r=0;r<8;r++)items.forEach(item=>sequence.push(item));sequence.forEach(item=>slotTrack.appendChild(makeItem(item)));const itemH=getItemH();const basePos=items.length*3+centerIndex;setTrackY(-(basePos*itemH)+getCenterOffset())}
+function makeItem(item){const div=document.createElement("div");div.className="qItem";div.innerHTML=`<div class="letter" style="background:${item.color}">${item.letter}</div><div class="text"><span class="num">QUESTION ${String(item.index+1).padStart(2,"0")} / ${item.letter}</span>${escapeHtml(item.question)}</div>`;return div}
+function easeOutCubic(t){return 1-Math.pow(1-t,3)}function escapeHtml(str){return String(str).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[s]))}
+function chooseTarget(){const active=getActiveItems();if(active.length===0)return null;return active[Math.floor(Math.random()*active.length)]}
+function spin(){if(spinning)return;const target=chooseTarget();if(!target){resultText.textContent="10問すべて終了しました。リセットするともう一度使えます。";burst();return}spinning=true;mainPanel.classList.add("spinning");spinBtn.disabled=true;editBtn.disabled=true;resetBtn.disabled=true;spinBtn.textContent="ROLLING...";
+ const items=getItems(),itemH=getItemH(),centerOffset=getCenterOffset();slotTrack.innerHTML="";const sequence=[];for(let r=0;r<14;r++)items.forEach(item=>sequence.push(item));sequence.forEach(item=>slotTrack.appendChild(makeItem(item)));
+ const startIndex=items.length*2+currentIndex;const rounds=4+Math.floor(Math.random()*2);const endIndex=startIndex+rounds*items.length+target.index;const startY=-(startIndex*itemH)+centerOffset;const endY=-(endIndex*itemH)+centerOffset;const duration=4300+Math.random()*700;const startTime=performance.now();
+ function animate(now){const t=Math.min(1,(now-startTime)/duration);const eased=easeOutCubic(t);setTrackY(startY+(endY-startY)*eased);if(t<1){requestAnimationFrame(animate)}else{currentIndex=target.index;showResult(target);spinning=false;mainPanel.classList.remove("spinning");spinBtn.disabled=false;editBtn.disabled=false;resetBtn.disabled=false;spinBtn.textContent="START";setTimeout(()=>buildTrack(currentIndex),300)}}requestAnimationFrame(animate)}
+function showResult(item){bigLetter.textContent=item.letter;bigLetter.style.background=item.color;resultText.textContent=item.question;if(noRepeat.checked)done.add(item.letter);localStorage.setItem("hp10q_slot_done",JSON.stringify([...done]));buildStatus();flash.classList.remove("on");void flash.offsetWidth;flash.classList.add("on");burst()}
+function buildStatus(){statusEl.innerHTML="";letters.forEach((l,i)=>{const div=document.createElement("div");div.className="mini"+(done.has(l)?" done":"");div.textContent=l;div.style.color=done.has(l)?"#fff":colors[i];statusEl.appendChild(div)})}
+function buildEditors(){editGrid.innerHTML="";letters.forEach(l=>{const box=document.createElement("div");const label=document.createElement("label");label.textContent=`${l} の質問`;const ta=document.createElement("textarea");ta.id="q_"+safeId(l);ta.value=questions[l]||defaultQuestions[l];box.appendChild(label);box.appendChild(ta);editGrid.appendChild(box)})}
+function saveQuestions(){const next={};letters.forEach(l=>{const el=document.getElementById("q_"+safeId(l));next[l]=el.value.trim()||defaultQuestions[l]});questions=next;localStorage.setItem("hp10q_slot_questions",JSON.stringify(questions));buildTrack(currentIndex);modal.classList.remove("show");resultText.textContent="質問を保存しました。STARTを押して回してください。";bigLetter.textContent="?"}
+function restoreDefaults(){questions={...defaultQuestions};localStorage.setItem("hp10q_slot_questions",JSON.stringify(questions));buildEditors();buildTrack(currentIndex)}
+function resetAll(){done=new Set();localStorage.setItem("hp10q_slot_done","[]");resultText.textContent="リセットしました。STARTを押すと、質問が回り始めます。";bigLetter.textContent="?";bigLetter.style.background="var(--yellow)";buildStatus();buildTrack(0)}
+function burst(){const box=document.getElementById("confetti");const palette=["#ff4fa3","#39d5ff","#ffe45c","#70f0b4","#ff914d","#9b7bff"];for(let i=0;i<48;i++){const p=document.createElement("div");p.className="piece";p.style.left=Math.random()*100+"%";p.style.top="-30px";p.style.background=palette[Math.floor(Math.random()*palette.length)];p.style.animationDelay=Math.random()*0.18+"s";p.style.transform=`rotate(${Math.random()*180}deg)`;box.appendChild(p);setTimeout(()=>p.remove(),2000)}}
+spinBtn.addEventListener("click",spin);editBtn.addEventListener("click",()=>{buildEditors();modal.classList.add("show")});closeBtn.addEventListener("click",()=>modal.classList.remove("show"));saveBtn.addEventListener("click",saveQuestions);defaultBtn.addEventListener("click",restoreDefaults);resetBtn.addEventListener("click",resetAll);noRepeat.addEventListener("change",()=>buildTrack(currentIndex));fsBtn.addEventListener("click",()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()});window.addEventListener("resize",()=>buildTrack(currentIndex));
+buildStatus();buildTrack(0);
+</script>
+</body></html>
