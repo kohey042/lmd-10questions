@@ -561,7 +561,8 @@ async function prepareAudio(){
   if(!soundEnabled)return false;
   if(audioReady)return true;
   if(audioPreparing){
-    while(audioPreparing && !audioReady){
+    const started=performance.now();
+    while(audioPreparing && !audioReady && performance.now()-started<1800){
       await new Promise(r=>setTimeout(r,30));
     }
     return audioReady;
@@ -621,16 +622,18 @@ function stopAllAudio(){
 function updateSoundButton(){
   soundBtn.textContent=soundEnabled?"音：ON":"音：OFF";
 }
-async function startRolling(){
+function startRolling(){
   if(rolling||stopping)return;
   const target=chooseTarget();
   if(!target){
     resultText.textContent=drawCount>=maxDraws?"10問終了しました。リセットするともう一度使えます。":"抽選できる質問がありません。質問を追加するかリセットしてください。";
     return;
   }
-  spinBtn.disabled=true;
-  spinBtn.textContent="LOADING...";
-  await prepareAudio();
+
+  // PWA / iPad対策：
+  // 音声準備を待ってから動かすと、Safari側の音声デコード待ちで
+  // STARTボタンがLOADINGのまま止まることがある。
+  // なので、画面の回転は即開始し、音は準備でき次第鳴らす。
   rolling=true;
   stopping=false;
   mainPanel.classList.add("rolling");
@@ -640,8 +643,19 @@ async function startRolling(){
   resetBtn.disabled=true;
   spinBtn.textContent="ROLLING...";
   resultText.textContent="STOPを押すと質問が確定します。";
+
   stopSpinSound();
-  spinSource=playBuffer("spin",{loop:true});
+  if(audioReady){
+    spinSource=playBuffer("spin",{loop:true});
+  }else{
+    prepareAudio().then((ok)=>{
+      if(ok && rolling && !stopping){
+        stopSpinSound();
+        spinSource=playBuffer("spin",{loop:true});
+      }
+    });
+  }
+
   lastTime=performance.now();
   rafId=requestAnimationFrame(rollLoop);
 }
