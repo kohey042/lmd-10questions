@@ -259,6 +259,31 @@ textarea{
 .confetti{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:70}
 .piece{position:absolute;width:10px;height:16px;opacity:0;animation:fall 1.7s ease-out forwards}
 @keyframes fall{0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(720px) rotate(520deg);opacity:0}}
+
+/* iPad/Safari fullscreen overlay avoidance */
+:fullscreen .app{
+  padding-top:max(28px, env(safe-area-inset-top));
+  padding-left:max(22px, calc(env(safe-area-inset-left) + 64px));
+}
+:-webkit-full-screen .app{
+  padding-top:max(28px, env(safe-area-inset-top));
+  padding-left:max(22px, calc(env(safe-area-inset-left) + 64px));
+}
+:fullscreen header{
+  margin-bottom:14px;
+}
+:-webkit-full-screen header{
+  margin-bottom:14px;
+}
+@media (orientation: landscape){
+  :fullscreen .app{
+    padding-left:max(22px, calc(env(safe-area-inset-left) + 76px));
+  }
+  :-webkit-full-screen .app{
+    padding-left:max(22px, calc(env(safe-area-inset-left) + 76px));
+  }
+}
+
 @media(max-width:900px){
   .stage{grid-template-columns:1fr}
   .mainPanel,.sidePanel{min-height:auto}
